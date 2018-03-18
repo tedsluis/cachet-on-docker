@@ -26,13 +26,13 @@ pi@raspberry:~ $ git clone https://github.com/tedsluis/cachet-on-docker.git
 ```  
    
 ### Init scripts  
-Most Linux distros use `Systemd` manage services nowadays, so `Systemd` will be used to launch the containers. Each container has its own `unit file (located in `/etc/systemd/system`). These `unit files` are configured to run on `arm32v6` (like `Raspberry Pi` or `Orange Pi`). If you want to run these on `X86` or `amd64`, you should change the Docker `image:tag` in each unit file:  
+Most Linux distros use `Systemd` manage services nowadays, so `Systemd` will be used to launch the containers. Each container has its own `unit file` (located in `/etc/systemd/system`). These `unit files` are configured to run on `arm32v6` (like `Raspberry Pi` or `Orange Pi`). If you want to run these on `X86` or `amd64`, you should change the Docker `image:tag` in each unit file:  
 
 | Unit file                                                                                                   | arm32v6 Docker image                                                                                   | X86 / amd64 Docker image                                                               |
 | :---------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | [docker-cachet.service](https://github.com/tedsluis/cachet-on-docker/blob/master/docker-cachet.service)     | [tedsluis/cachet:2.3.13-nginx-alpine-arm32v6](https://hub.docker.com/r/tedsluis/cachet/)               | [cachethq/docker:latest](https://hub.docker.com/r/cachethq/docker/)                    |
 | [docker-postgres.service](https://github.com/tedsluis/cachet-on-docker/blob/master/docker-postgres.service) | [arm32v6/postgres:alpine](https://hub.docker.com/r/arm32v6/postgres/)                                  | [postgres:9.5](https://hub.docker.com/_/postgres/)                                     |
-| [cachet-monitor.service](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet-monitor.service)   | [tedsluis/cachet-monitor:2.3-golang-alpine-arm32v6](https://hub.docker.com/r/tedsluis/cachet-monitor/) | [castawaylabs/cachet-monitor](https://hub.docker.com/r/castawaylabs/cachet-monitor/)   |
+| [cachet-monitor.service](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet-monitor.service)   | [tedsluis/cachet-monitor:2.3-golang-alpine-arm32v6](https://hub.docker.com/r/tedsluis/cachet-monitor/) | [castawaylabs/cachet-monitor:latest](https://hub.docker.com/r/castawaylabs/cachet-monitor/)   |
  
 ### Start services  
 Simply copy these `unit files` from the root of the cloned repository to `/etc/systemd/system/` and do a `systemctl daemon-reload`:  
@@ -70,7 +70,7 @@ Unforunately for arm32 users (like Raspberry Pi and Orange Pi) there is no offic
   
 ### Build nginx based Alpine arm32v6 for Raspberry Pi/Orange Pi
 To build Cachet for `arm32` a NGINX Alpine base image is needed. Since a base image `arm32v7/alpine` is not available, [arm32v6/alpine](https://hub.docker.com/r/arm32v6/alpine/) is used.  
-Dockerfile: [nginx-alpine-arm32v6/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/nginx-alpine-arm32v6/Dockerfile)  
+Dockerfile: [cachet-on-docker/nginx-alpine-arm32v6/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/nginx-alpine-arm32v6/Dockerfile)    
 ```
 pi@raspberry:~ $ sudo docker build -t tedsluis/nginx:1.13.9-alpine-arm32v6 . \
                                               --file cachet-on-docker/nginx-alpine-arm32v6/Dockerfile
@@ -82,7 +82,7 @@ tedsluis/nginx      1.13.9-alpine-arm32v6   5f9138b121b5        1 minute ago    
 ```
   
 ### Build Cachet based on NGINX Alpine arm32v6 for Raspberry Pi/Orange Pi
-Dockerfile: [cachet/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet/Dockerfile)
+Dockerfile: [cachet-on-docker/cachet/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet/Dockerfile)  
 ```
 pi@raspberry:~ $ sudo docker build -t tedsluis/cachet:2.3.13-nginx-alpine-arm32v6 . \
                                               --build-arg cachet_ver="v2.3.13" \
@@ -94,10 +94,12 @@ tedsluis/cachet     2.3.13-nginx-alpine-arm32v6   53b5de7af0e5        1 minute a
 ```
   
 ### Build Cachet-monitor based on golang Alpine arm32v6 for Raspberry Pi/Orange Pi
-Dockerfile: [cachet-monitor/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet-monitor/Dockerfile)
+For this build you need to clone the [https://github.com/tedsluis/cachet-monitor](https://github.com/tedsluis/cachet-monitor).  
+Dockerfile: [cachet-monitor/Dockerfile](https://github.com/tedsluis/cachet-monitor/blob/master/Dockerfile)  
 ```
+pi@raspberry:~ $ git clone https://github.com/tedsluis/cachet-monitor.git
 pi@raspberry:~ $ sudo docker build -t tedsluis/cachet-monitor:latest . \
-                                              --file cachet-on-docker/cachet-monitor/Dockerfile 
+                                              --file cachet-monitor/Dockerfile 
 
 sudo docker images tedsluis/cachet-monitor
 REPOSITORY                TAG                         IMAGE ID            CREATED             SIZE
