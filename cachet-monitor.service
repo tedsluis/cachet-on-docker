@@ -1,0 +1,35 @@
+
+[Unit]
+Description=Cachet Monitor
+# For the Cachet-monitor service needs to run:
+After=syslog.target
+After=network.target
+After=postgresql.service
+After=docker-postgres.service
+After=docker-cachet.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/var/lib/cachet-monitor/
+# Before every restart we remove the previous cachet-monitor container:
+ExecStartPre=-/usr/bin/docker rm -f cachet-monitor
+# Launch the cachet-monitor container
+# Note:
+# Down here it is configured to run on arm32v6 (like raspberry pi).
+# Change the <image>:<tag> into "castawaylabs/cachet-monitor:latest" if you run on X86/amd64 hardware.
+#ExecStart=/usr/bin/docker run -d --rm --name cachet-monitor \
+#                                 -h cachet-monitor \
+#                                 -v /var/lib/cachet-monitor/config.json:/etc/cachet-monitor.config.json \
+#				  <image>:<tag>
+ExecStart=/usr/bin/docker run -d --rm --name cachet-monitor \
+                                 -h cachet-monitor \
+                                 -v /var/lib/cachet-monitor/config.json:/etc/cachet-monitor.config.json \
+				 tedsluis/cachet-monitor:3.0-golang-alpine-arm32v6
+
+Restart=always
+Environment=USER=root HOME=/root
+
+[Install]
+WantedBy=multi-user.target
