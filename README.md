@@ -3,7 +3,9 @@ Cachet and Cachet-monitor running on Docker
   
 Explained how to run it on `Raspbian` (boards like `Raspberry Pi` or `Orange Pi`) or any other Linux distros like `Fedora`, `Centos`, `RHEL`, `Debian`, `Ubuntu` and `Mint`.  
   
-## Install docker  
+## Deploy Cachet, Postgres and Cachet-monitor as containers via systemd  
+  
+### Install docker  
 One way to install Docker on any kind of Linux distro:  
 ```
 pi@raspberry:~ $ curl -sSL https://get.docker.com | sh
@@ -11,38 +13,55 @@ pi@raspberry:~ $ curl -sSL https://get.docker.com | sh
 More info at [https://docs.docker.com/install/](https://docs.docker.com/install/)  
 Note for raspberry: Docker runs nowadays on raspbian. It isn't needed to use the [Hypriot Docker Image for Raspberry Pi](https://blog.hypriot.com/getting-started-with-docker-on-your-arm-device/) any more.  
   
-## Create data directory for Postgres database  
+### Create data directory for Postgres database  
 By default containers use ephemeral storage. To ensure persistent storage, a directory will be mounted into the Postgres container.   
 ```
 pi@raspberry:~ $ sudo mkdir -p /var/lib/progresql/data
 ```
   
-## Clone this git repository  
+### Clone this git repository  
+This repo contains some configuration files that are needed to run Cachet.  
 ```
 pi@raspberry:~ $ git clone https://github.com/tedsluis/cachet-on-docker.git
-pi@raspberry:~ $ cd cachet-on-docker
 ```  
    
-## Init scripts  
-Nowadays on most Linux distros `Systemd` manage services, so `Systemd` will be used to launch the containers. Each container has its own `unit file`:  
-These `unit files` are configured to run on `arm32v6` (like `Raspberry Pi` or `Orange Pi`). If you want to run these on `X86` or `amd64`, you should change the Docker `image:tag` in these unit files:  
+### Init scripts  
+Most Linux distros use `Systemd` manage services nowadays, so `Systemd` will be used to launch the containers. Each container has its own `unit file. These `unit files` are configured to run on `arm32v6` (like `Raspberry Pi` or `Orange Pi`). If you want to run these on `X86` or `amd64`, you should change the Docker `image:tag` in each unit file:  
 
 | Unit file                                                                                                   | arm32v6 Docker image                        | X86 / amd64 Docker image                                                                                           |
 | :---------------------------------------------------------------------------------------------------------- | :------------------------------------------ | :----------------------------------------------------------------------------------------------------------------- |
 | [docker-cachet.service](https://github.com/tedsluis/cachet-on-docker/blob/master/docker-cachet.service)     | [tedsluis/cachet:2.3.13-nginx-alpine-arm32v6](https://hub.docker.com/r/tedsluis/cachet/) | [cachethq/docker:latest](https://hub.docker.com/r/cachethq/docker/)   |
 | [docker-postgres.service](https://github.com/tedsluis/cachet-on-docker/blob/master/docker-postgres.service) | [arm32v6/postgres:alpine](https://hub.docker.com/r/arm32v6/postgres/)                    | [postgres:9.5](https://hub.docker.com/_/postgres/)                    |
 | [cachet-monitor.service](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet-monitor.service)   |                                             |                                                                                                                    |
-  
-## Start services  
+ 
+### Start services  
 Simply copy these `unit files` from the root of the cloned repository to `/etc/systemd/system/` and do a `systemctl daemon-reload`:  
 ```
-pi@raspberry:~/cachet-on-docker $ sudo cp *.service /etc/systemd/system
-pi@raspberry:~/cachet-on-docker $ sudo systemctl daemon-reload
+pi@raspberry:~ $ sudo cp *.service /etc/systemd/system
+pi@raspberry:~ $ sudo systemctl daemon-reload
 ```
+  
+View the containers running:  
+```
+pi@raspberry:~ $ sudo docker ps
+CONTAINER ID        IMAGE                                         COMMAND                  CREATED             STATUS              PORTS                          NAMES
+0bb444ef9638        tedsluis/cachet:2.3.13-nginx-alpine-arm32v6   "/sbin/entrypoint.sh"    5 minutes ago       Up 1 minute         80/tcp, 0.0.0.0:80->8000/tcp   cachet
+cb95d27600d6        arm32v6/postgres:alpine                       "docker-entrypoint.s…"   11 minutes ago      Up 1 minute         5432/tcp                       postgres
+``` 
+  
 Finally you can `enable` these services, so they will always start after a reboot:   
 ```
-pi@raspberry:~/cachet-on-docker $ sudo systemctl enable docker-postgres.service
-pi@raspberry:~/cachet-on-docker $ sudo systemctl enable docker-cachet.service
+pi@raspberry:~ $ sudo systemctl enable docker-postgres.service
+pi@raspberry:~ $ sudo systemctl enable docker-cachet.service
+pi@raspberry:~ $ sudo systemctl enable cachet-monitor.service
+```
+  
+Use the commands below to view the logs or `stop`, `start` or `restart` the services:  
+```
+pi@raspberry:~ $ sudo journalctl -u <unit file>
+pi@raspberry:~ $ sudo systemctl stop <unit file>
+pi@raspberry:~ $ sudo systemctl start <unit file>
+pi@raspberry:~ $ sudo systemctl restart <unit file>
 ```
   
 ## Build your own Cachet image for arm32
@@ -52,10 +71,10 @@ Unforunately for arm32 users (like Raspberry Pi and Orange Pi) there is no offic
 To build Cachet for `arm32` a NGINX Alpine base image is needed. Since a base image `arm32v7/alpine` is not available, [arm32v6/alpine](https://hub.docker.com/r/arm32v6/alpine/) is used.  
 Dockerfile: [nginx-alpine-arm32v6/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/nginx-alpine-arm32v6/Dockerfile)  
 ```
-pi@raspberry:~/cachet-on-docker $ sudo docker build -t tedsluis/nginx:1.13.9-alpine-arm32v6 \
-                                                    --file cachet-on-docker/nginx-alpine-arm32v6/Dockerfile
+pi@raspberry:~ $ sudo docker build -t tedsluis/nginx:1.13.9-alpine-arm32v6 \
+                                              --file cachet-on-docker/nginx-alpine-arm32v6/Dockerfile
 
-pi@raspberry:~/cachet-on-docker $ sudo docker images tedsluis/nginx
+pi@raspberry:~ $ sudo docker images tedsluis/nginx
 REPOSITORY          TAG                     IMAGE ID            CREATED             SIZE
 tedsluis/nginx      1.13.9-alpine-arm32v6   5f9138b121b5        1 minute ago        15MB
 
@@ -64,11 +83,11 @@ tedsluis/nginx      1.13.9-alpine-arm32v6   5f9138b121b5        1 minute ago    
 ### Build Cachet based on NGINX Alpine arm32v6 for Raspberry Pi/Orange Pi
 Dockerfile: [cachet/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/cachet/Dockerfile)
 ```
-pi@raspberry:~/cachet-on-docker $ sudo docker build -t tedsluis/cachet:2.3.13-nginx-alpine-arm32v6 \
-                                                    --build-arg cachet_ver="v2.3.13" \
-                                                    --file cachet-on-docker/cachet/Dockerfile
+pi@raspberry:~ $ sudo docker build -t tedsluis/cachet:2.3.13-nginx-alpine-arm32v6 \
+                                              --build-arg cachet_ver="v2.3.13" \
+                                              --file cachet-on-docker/cachet/Dockerfile
 
-pi@raspberry:~/cachet-on-docker $ sudo docker images tedsluis/cachet
+pi@raspberry:~ $ sudo docker images tedsluis/cachet
 REPOSITORY          TAG                           IMAGE ID            CREATED             SIZE
 tedsluis/cachet     2.3.13-nginx-alpine-arm32v6   53b5de7af0e5        1 minute ago        258MB 
 ```
