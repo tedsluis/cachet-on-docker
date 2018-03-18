@@ -50,10 +50,15 @@ Unforunately for arm32 users (like Raspberry Pi and Orange Pi) there is no offic
   
 ### Build nginx based Alpine arm32v6 for Raspberry Pi/Orange Pi
 To build Cachet for `arm32` a NGINX Alpine base image is needed. Since a base image `arm32v7/alpine` is not available, [arm32v6/alpine](https://hub.docker.com/r/arm32v6/alpine/) is used.  
-Dockerfile: [nginx-alpine-arm32v6/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/nginx-alpine-arm32v6/Dockerfile)
+Dockerfile: [nginx-alpine-arm32v6/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blob/master/nginx-alpine-arm32v6/Dockerfile)  
 ```
 pi@raspberry:~/cachet-on-docker $ sudo docker build -t tedsluis/nginx:1.13.9-alpine-arm32v6 \
                                                     --file cachet-on-docker/nginx-alpine-arm32v6/Dockerfile
+
+pi@raspberry:~/cachet-on-docker $ sudo docker images tedsluis/nginx
+REPOSITORY          TAG                     IMAGE ID            CREATED             SIZE
+tedsluis/nginx      1.13.9-alpine-arm32v6   5f9138b121b5        1 minute ago        15MB
+
 ```
   
 ### Build Cachet based on NGINX Alpine arm32v6 for Raspberry Pi/Orange Pi
@@ -62,9 +67,14 @@ Dockerfile: [cachet/Dockerfile](https://github.com/tedsluis/cachet-on-docker/blo
 pi@raspberry:~/cachet-on-docker $ sudo docker build -t tedsluis/cachet:2.3.13-nginx-alpine-arm32v6 \
                                                     --build-arg cachet_ver="v2.3.13" \
                                                     --file cachet-on-docker/cachet/Dockerfile
+
+pi@raspberry:~/cachet-on-docker $ sudo docker images tedsluis/cachet
+REPOSITORY          TAG                           IMAGE ID            CREATED             SIZE
+tedsluis/cachet     2.3.13-nginx-alpine-arm32v6   53b5de7af0e5        1 minute ago        258MB 
 ```
   
-**More info**
+**More info**  
+  
 ted.sluis@gmail.com  
 https://hub.docker.com/u/tedsluis  
 https://docs.cachethq.io  
