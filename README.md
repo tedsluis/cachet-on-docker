@@ -65,11 +65,11 @@ pi@raspberry:~/cachet-on-docker $ sudo docker build -t tedsluis/cachet:2.3.13-ng
 ```
   
 **More info**
-ted.sluis@gmail.com
-https://hub.docker.com/u/tedsluis
-https://docs.cachethq.io
-https://github.com/CachetHQ/Cachet
-https://github.com/CachetHQ/Docker
-https://github.com/tedsluis/cachet-monitor
-https://castawaylabs.github.io/cachet-monitor
+ted.sluis@gmail.com  
+https://hub.docker.com/u/tedsluis  
+https://docs.cachethq.io  
+https://github.com/CachetHQ/Cachet  
+https://github.com/CachetHQ/Docker  
+https://github.com/tedsluis/cachet-monitor  
+https://castawaylabs.github.io/cachet-monitor  
 
