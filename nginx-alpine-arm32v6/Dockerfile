@@ -1,6 +1,6 @@
-FROM alpine:3.7
+FROM arm32v6/alpine:3.7
 
-LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
+LABEL maintainer="Ted Sluis <ted.sluis@gmail.com>"
 
 ENV NGINX_VERSION 1.13.9
 
