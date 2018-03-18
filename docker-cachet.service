@@ -1,0 +1,39 @@
+[Unit]
+Description=Cachet
+# This Cachet services needs at least Docker and Postgres to run:
+After=docker.service
+Requires=docker.service
+After=docker-postgres.service
+Requires=docker-postgres.service
+
+[Service]
+# Before every restart the previous Cachet container will be removed:
+ExecStartPre=-/usr/bin/docker rm -f cachet 
+ExecStartPre=/bin/sleep 10 
+# Launch Cachet container.
+# Note: 
+# Down here it is configured to run on arm32v6 (like raspberry pi). 
+# Change the <image>:<tag> into "cachethq/docker:latest" if you run on X86/amd64 hardware.
+#ExecStart=/usr/bin/docker run --rm --name cachet --link postgres:postgres -e DB_DRIVER=pgsql \
+#                                                                          -e DB_HOST=postgres  \
+#                                                                          -e DB_DATABASE=postgres \
+#                                                                          -e DB_USERNAME=postgres \
+#                                                                          -e DB_PASSWORD=postgres \
+#                                                                          -e APP_KEY="base64:Xlwt9gnVWtwRR/xSMuGIZ71xV3jerFt3I8+BJ6HcxvQ=" \
+#                                                                          -p <external port>:8000 \
+#                                                                          <image>:<tag> 
+ExecStart=/usr/bin/docker run --rm --name cachet --link postgres:postgres -e DB_DRIVER=pgsql \
+                                                                          -e DB_HOST=postgres \
+                                                                          -e DB_DATABASE=postgres \
+                                                                          -e DB_USERNAME=postgres \
+                                                                          -e DB_PASSWORD=postgres \
+                                                                          -e APP_KEY="base64:Xlwt9gnVWtwRR/xSMuGIZ71xV3jerFt3I8+BJ6HcxvQ=" \
+                                                                          -p 80:8000 \
+                                                                          tedsluis/cachet:2.3.13-nginx-alpine-arm32v6
+
+ExecStop=/usr/bin/docker stop cachet 
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,28 @@
+[Unit]
+Description=Postgres
+# For the Postgres service Docker needs to run:
+After=docker.service
+Requires=docker.service
+
+[Service]
+# Before every restart we remove the previous postgress container (not the database data):
+ExecStartPre=-/usr/bin/docker rm -f postgres
+# Launch the Postgres database.
+# Note:
+# Down here it is configured to run on arm32v6 (like raspberry pi).
+# Change the <image>:<tag> into "postgres:9.5" if you run on X86/amd64 hardware.
+#ExecStart=/usr/bin/docker run  --name postgres --rm  -v /var/lib/postgresql/data:/var/lib/postgresql/data \
+#                                                     -e POSTGRES_USER=postgres \
+#                                                     -e POSTGRES_PASSWORD=postgres 
+#                                                     <image:tag>
+ExecStart=/usr/bin/docker run  --name postgres --rm  -v /var/lib/postgresql/data:/var/lib/postgresql/data \
+                                                     -e POSTGRES_USER=postgres \
+                                                     -e POSTGRES_PASSWORD=postgres \
+                                                     arm32v6/postgres:alpine
+
+ExecStop=/usr/bin/docker stop postgres 
+Restart=always
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target
